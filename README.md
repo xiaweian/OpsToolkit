@@ -2,7 +2,7 @@
 # OpsToolkit 🛠️
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![ShellCheck](https://github.com/yourusername/OpsToolkit/actions/workflows/shellcheck.yml/badge.svg)](https://github.com/yourusername/OpsToolkit/actions)
+[![ShellCheck](https://github.com/xiaweian/OpsToolkit/actions/workflows/shellcheck.yml/badge.svg)](https://github.com/xiaweian/OpsToolkit/actions)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://makeapullrequest.com)
 
 > 系统运维与安全自动化工具集 | 适用于Linux服务器环境
@@ -18,7 +18,7 @@
 
 ```bash
 # 克隆仓库
-git clone https://github.com/yourusername/OpsToolkit.git
+git clone https://github.com/xiaweian/OpsToolkit.git
 cd OpsToolkit
 
 # 执行SSH加固脚本（示例）
@@ -120,17 +120,3 @@ MIT License © 2024 [Your Name]
 
 > 📌 **提示**：所有脚本应在理解其功能的前提下使用，作者不对误操作导致的后果负责。
 ```
-
-### 使用说明：
-1. 将文中 `yourusername` 替换为您的GitHub用户名
-2. 如需显示截图/GIF，创建 `docs/images/` 目录并添加媒体文件
-3. 实际使用时删除所有注释和提示文本
-4. 配套文件建议：
-   - 添加 `LICENSE` 文件（MIT模板见[choosealicense.com](https://choosealicense.com/licenses/mit/))
-   - 创建 `CONTRIBUTING.md` 说明贡献规范
-
-这个README已优化：
-✅ 移动端友好排版  
-✅ 关键信息分层展示  
-✅ 支持GitHub的Markdown扩展语法  
-✅ 包含风险提示和法律声明
