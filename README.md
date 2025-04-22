@@ -17,11 +17,15 @@
 
 
 # 克隆仓库
+```bash
 git clone https://github.com/xiaweian/OpsToolkit.git
 cd OpsToolkit
+```
 
 # 执行SSH加固脚本（示例）
+```bash
 sudo ./SSH-Hardening/hardened_ssh_config.sh
+```
 
 
 ---
