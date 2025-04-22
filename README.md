@@ -1,4 +1,3 @@
-```markdown
 # OpsToolkit 🛠️
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
@@ -23,7 +22,7 @@ cd OpsToolkit
 
 # 执行SSH加固脚本（示例）
 sudo ./SSH-Hardening/hardened_ssh_config.sh
-```
+
 
 ---
 
