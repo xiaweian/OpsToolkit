@@ -5,10 +5,43 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
-# 检查是否是 root 用户，如果不是，退出脚本
-if [ "$(id -u)" -ne 0 ]; then
-    echo -e "${RED}此脚本必须以 root 用户身份运行${NC}"
-    exit 1
+# 检查是否有sudo权限
+if ! command -v sudo &> /dev/null; then
+    echo -e "${YELLOW}未检测到 sudo，正在检查是否可以安装 sudo${NC}"
+
+    # 检查当前系统类型并安装 sudo
+    if command -v apt &> /dev/null; then
+        echo -e "${YELLOW}检测到系统是基于 Debian/Ubuntu，正在安装 sudo${NC}"
+        if ! apt-get update -y; then
+            echo -e "${RED}无法更新包列表，请检查网络连接${NC}"
+            exit 1
+        fi
+        if ! apt-get install sudo -y; then
+            echo -e "${RED}安装 sudo 失败，请检查系统配置${NC}"
+            exit 1
+        fi
+    elif command -v yum &> /dev/null; then
+        echo -e "${YELLOW}检测到系统是基于 CentOS/RedHat，正在安装 sudo${NC}"
+        if ! yum install sudo -y; then
+            echo -e "${RED}安装 sudo 失败，请检查系统配置${NC}"
+            exit 1
+        fi
+    else
+        echo -e "${RED}未检测到 apt 或 yum，无法自动安装 sudo。请手动安装 sudo。${NC}"
+        exit 1
+    fi
+    echo -e "${YELLOW}sudo 安装成功，重新运行脚本...${NC}"
+    exec $0 "$@"  # 重新执行当前脚本
+fi
+
+# 检查是否有 sudo 权限
+if ! sudo -n true 2>/dev/null; then
+    echo -e "${YELLOW}此脚本需要 sudo 权限来修改 SSH 配置${NC}"
+    echo -e "${YELLOW}请输入密码：${NC}"
+    if ! sudo -v; then
+        echo -e "${RED}无法获取 sudo 权限，退出${NC}"
+        exit 1
+    fi
 fi
 
 # 检查系统兼容性
@@ -32,7 +65,7 @@ chmod 600 "$HOME/.ssh/authorized_keys"
 # 修复所有权
 if [ "$(whoami)" != "$(stat -c '%U' "$HOME/.ssh")" ]; then
     echo -e "${YELLOW}修正 ~/.ssh 目录所有权${NC}"
-    chown -R "$(whoami)":"$(whoami)" "$HOME/.ssh"
+    sudo chown -R "$(whoami)":"$(whoami)" "$HOME/.ssh"
 fi
 
 # 公钥处理函数
@@ -47,7 +80,8 @@ process_ssh_keys() {
         read -r -p "SSH公钥（直接回车结束输入）: " pubkey
         [ -z "$pubkey" ] && break
 
-        if ! echo "$pubkey" | grep -Eq '^(ssh-(rsa|ed25519)|ecdsa-sha2-nistp[0-9]+|sk-ssh-ed25519) [A-Za-z0-9+/=]+(\s.+)?$'; then
+        # 更新后的正则表达式，支持 sk-ssh-ed25519@openssh.com
+        if ! echo "$pubkey" | grep -Eq '^(ssh-(rsa|ed25519)|ecdsa-sha2-nistp[0-9]+|sk-ssh-ed25519(@openssh.com)?) [A-Za-z0-9+/=]+(\s.+)?$'; then
             echo -e "${RED}警告：不支持的SSH公钥格式${NC}"
             echo -e "${YELLOW}支持格式：ssh-rsa, ssh-ed25519, ecdsa, sk-ssh-ed25519${NC}"
             continue
@@ -81,7 +115,7 @@ process_ssh_keys
 # 备份 SSH 配置
 timestamp=$(date +%Y%m%d%H%M%S)
 backup_file="/etc/ssh/sshd_config.bak.$timestamp"
-cp /etc/ssh/sshd_config "$backup_file"
+sudo cp /etc/ssh/sshd_config "$backup_file"
 echo -e "${YELLOW}原始配置已备份至: $backup_file${NC}"
 
 # SSH 安全配置内容
@@ -110,14 +144,14 @@ EOF
 # 写入配置
 if [ "$use_config_dir" -eq 1 ]; then
     custom_file="$SSH_CONFIG_DIR/99-custom-hardening.conf"
-    echo "$SSH_SECURITY_CONFIG" > "$custom_file"
+    echo "$SSH_SECURITY_CONFIG" | sudo tee "$custom_file" > /dev/null
     echo -e "${YELLOW}配置已写入: $custom_file${NC}"
 else
-    sed -i 's/^#*PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config
-    sed -i 's/^#*ChallengeResponseAuthentication.*/ChallengeResponseAuthentication no/' /etc/ssh/sshd_config
-    sed -i 's/^#*KbdInteractiveAuthentication.*/KbdInteractiveAuthentication no/' /etc/ssh/sshd_config
-    sed -i 's/^#*PubkeyAuthentication.*/PubkeyAuthentication yes/' /etc/ssh/sshd_config
-    sed -i 's/^#*PermitRootLogin.*/PermitRootLogin prohibit-password/' /etc/ssh/sshd_config
+    sudo sed -i 's/^#*PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config
+    sudo sed -i 's/^#*ChallengeResponseAuthentication.*/ChallengeResponseAuthentication no/' /etc/ssh/sshd_config
+    sudo sed -i 's/^#*KbdInteractiveAuthentication.*/KbdInteractiveAuthentication no/' /etc/ssh/sshd_config
+    sudo sed -i 's/^#*PubkeyAuthentication.*/PubkeyAuthentication yes/' /etc/ssh/sshd_config
+    sudo sed -i 's/^#*PermitRootLogin.*/PermitRootLogin prohibit-password/' /etc/ssh/sshd_config
 
     declare -A config_lines=( 
         ["AuthenticationMethods"]="publickey"
@@ -130,16 +164,16 @@ else
 
     for key in "${!config_lines[@]}"; do
         if ! grep -q "^$key" /etc/ssh/sshd_config; then
-            echo "$key ${config_lines[$key]}" >> /etc/ssh/sshd_config
+            echo "$key ${config_lines[$key]}" | sudo tee -a /etc/ssh/sshd_config > /dev/null
         fi
     done
 fi
 
 # 检查配置有效性
 echo -e "${YELLOW}验证 SSH 配置...${NC}"
-if sshd -t; then
+if sudo sshd -t; then
     echo -e "${YELLOW}配置语法无误，正在重启 SSH 服务...${NC}"
-    systemctl restart ssh || service ssh restart
+    sudo systemctl restart ssh || sudo service ssh restart
     echo -e "${YELLOW}SSH 服务已重启${NC}"
 else
     echo -e "${RED}配置存在语法错误，请检查修改内容${NC}"
