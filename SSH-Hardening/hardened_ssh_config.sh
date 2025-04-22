@@ -123,7 +123,7 @@ else
     sudo sed -i 's/^#*PubkeyAuthentication.*/PubkeyAuthentication yes/' /etc/ssh/sshd_config
     sudo sed -i 's/^#*PermitRootLogin.*/PermitRootLogin prohibit-password/' /etc/ssh/sshd_config
 
-    declare -A config_lines=(
+    declare -A config_lines=( 
         ["AuthenticationMethods"]="publickey"
         ["Protocol"]="2"
         ["Ciphers"]="chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr"
@@ -146,6 +146,3 @@ if sudo sshd -t; then
     sudo systemctl restart ssh || sudo service ssh restart
     echo -e "${YELLOW}SSH 服务已重启${NC}"
 else
-    echo -e "${RED}配置存在语法错误，请检查修改内容${NC}"
-    exit 1
-fi
