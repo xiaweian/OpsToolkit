@@ -122,35 +122,4 @@ MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@op
 if [ "$USE_CONFIG_DIR" -eq 1 ]; then
     # 使用配置目录
     CUSTOM_CONFIG_FILE="$SSH_CONFIG_DIR/99-disable-password-auth.conf"
-    echo -e "${YELLOW}创建配置文件: $CUSTOM_CONFIG_FILE${NC}"
-    echo "$SSH_SECURITY_CONFIG" | sudo tee "$CUSTOM_CONFIG_FILE" > /dev/null
-else
-    # 直接修改主配置文件
-    echo -e "${YELLOW}修改主配置文件${NC}"
-    
-    # 禁用密码认证
-    sudo sed -i 's/^#*PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config
-    sudo sed -i 's/^#*ChallengeResponseAuthentication.*/ChallengeResponseAuthentication no/' /etc/ssh/sshd_config
-    sudo sed -i 's/^#*KbdInteractiveAuthentication.*/KbdInteractiveAuthentication no/' /etc/ssh/sshd_config
-    sudo sed -i 's/^#*PubkeyAuthentication.*/PubkeyAuthentication yes/' /etc/ssh/sshd_config
-    sudo sed -i 's/^#*PermitRootLogin.*/PermitRootLogin prohibit-password/' /etc/ssh/sshd_config
-    
-    # 添加缺失的配置项
-    declare -A config_lines=( 
-        ["AuthenticationMethods"]="publickey"
-        ["Protocol"]="2"
-        ["Ciphers"]="chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr"
-        ["HostKeyAlgorithms"]="ssh-ed25519,ssh-ed25519-cert-v01@openssh.com,sk-ssh-ed25519@openssh.com,sk-ssh-ed25519-cert-v01@openssh.com,rsa-sha2-512,rsa-sha2-512-cert-v01@openssh.com,rsa-sha2-256,rsa-sha2-256-cert-v01@openssh.com"
-        ["KexAlgorithms"]="curve25519-sha256,curve25519-sha256@libssh.org,diffie-hellman-group-exchange-sha256"
-        ["MACs"]="hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com"
-    )
-
-    for key in "${!config_lines[@]}"; do
-        if ! grep -q "^$key" /etc/ssh/sshd_config; then
-            echo "$key ${config_lines[$key]}" | sudo tee -a /etc/ssh/sshd_config > /dev/null
-        fi
-    done
-fi
-
-# 检查配置文件有效性
-echo -e "${YELLOW}
+    echo -e "${
