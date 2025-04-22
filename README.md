@@ -15,7 +15,7 @@
 - **sudo权限**
 - **OpenSSH 8.0+**（SSH加固脚本需要）
 
-```bash
+
 # 克隆仓库
 git clone https://github.com/xiaweian/OpsToolkit.git
 cd OpsToolkit
