@@ -1,4 +1,3 @@
-mkdir -p .github/workflows && tee .github/workflows/shellcheck.yml <<'EOF'
 name: ShellCheck
 on: [push, pull_request]
 jobs:
