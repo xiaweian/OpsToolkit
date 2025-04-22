@@ -51,7 +51,8 @@ process_ssh_keys() {
         read -r -p "SSH公钥（直接回车结束输入）: " pubkey
         [ -z "$pubkey" ] && break
 
-        if ! echo "$pubkey" | grep -Eq '^(ssh-(rsa|ed25519)|ecdsa-sha2-nistp[0-9]+|sk-ssh-ed25519) [A-Za-z0-9+/=]+(\s.+)?$'; then
+        # 更新后的正则表达式，支持 sk-ssh-ed25519@openssh.com
+        if ! echo "$pubkey" | grep -Eq '^(ssh-(rsa|ed25519)|ecdsa-sha2-nistp[0-9]+|sk-ssh-ed25519(@openssh.com)?) [A-Za-z0-9+/=]+(\s.+)?$'; then
             echo -e "${RED}警告：不支持的SSH公钥格式${NC}"
             echo -e "${YELLOW}支持格式：ssh-rsa, ssh-ed25519, ecdsa, sk-ssh-ed25519${NC}"
             continue
