@@ -11,22 +11,28 @@ if ! command -v sudo &> /dev/null; then
 
     if command -v apt &> /dev/null; then
         echo -e "${YELLOW}检测到 Debian/Ubuntu 系统，正在安装 sudo${NC}"
-        apt-get update -y && apt-get install sudo -y || {
+        if apt-get update -y && apt-get install sudo -y; then
+            echo -e "${YELLOW}sudo 安装成功${NC}"
+        else
             echo -e "${RED}sudo 安装失败${NC}"
             exit 1
-        }
+        fi
     elif command -v dnf &> /dev/null; then
         echo -e "${YELLOW}检测到基于 RHEL/Oracle 的系统，使用 dnf 安装 sudo${NC}"
-        dnf install sudo -y || {
+        if dnf install sudo -y; then
+            echo -e "${YELLOW}sudo 安装成功${NC}"
+        else
             echo -e "${RED}sudo 安装失败${NC}"
             exit 1
-        }
+        fi
     elif command -v yum &> /dev/null; then
         echo -e "${YELLOW}检测到 CentOS/RHEL/Oracle 系统，使用 yum 安装 sudo${NC}"
-        yum install sudo -y || {
+        if yum install sudo -y; then
+            echo -e "${YELLOW}sudo 安装成功${NC}"
+        else
             echo -e "${RED}sudo 安装失败${NC}"
             exit 1
-        }
+        fi
     else
         echo -e "${RED}未检测到合适的包管理器，请手动安装 sudo${NC}"
         exit 1
